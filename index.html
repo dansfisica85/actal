@@ -1,0 +1,2279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Protótipo ACTAL — Framework de Elevadores Inteligentes OTIS com simulação de pânico e robôs autônomos">
+  <title>ACTAL Framework — Protótipo Interativo | OTIS Elevadores Inteligentes</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- AOS - Animate On Scroll -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════
+       ROOT & RESET
+    ═══════════════════════════════════════════════════ */
+    :root {
+      --bg-main: #f0f2f8;
+      --bg-white: #ffffff;
+      --bg-glass: rgba(255, 255, 255, 0.65);
+      --bg-glass-strong: rgba(255, 255, 255, 0.85);
+      --border-glass: rgba(255, 255, 255, 0.5);
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.06);
+      --shadow-glow: 0 8px 40px rgba(99, 102, 241, 0.15);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --shadow-card-hover: 0 16px 48px rgba(0, 0, 0, 0.12);
+
+      /* Vibrant Radiant Palette */
+      --c-indigo: #6366f1;
+      --c-violet: #8b5cf6;
+      --c-purple: #a855f7;
+      --c-fuchsia: #d946ef;
+      --c-pink: #ec4899;
+      --c-rose: #f43f5e;
+      --c-cyan: #06b6d4;
+      --c-teal: #14b8a6;
+      --c-emerald: #10b981;
+      --c-green: #22c55e;
+      --c-amber: #f59e0b;
+      --c-orange: #f97316;
+      --c-blue: #3b82f6;
+      --c-sky: #0ea5e9;
+
+      /* Gradients */
+      --grad-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 25%, #d946ef 50%, #f43f5e 75%, #f97316 100%);
+      --grad-dtl: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+      --grad-ceo: linear-gradient(135deg, #06b6d4, #0ea5e9, #3b82f6);
+      --grad-strab: linear-gradient(135deg, #10b981, #22c55e, #14b8a6);
+      --grad-panic: linear-gradient(135deg, #f43f5e, #ec4899, #f97316);
+
+      /* Text */
+      --text-dark: #1e1b4b;
+      --text-body: #475569;
+      --text-muted: #94a3b8;
+
+      --font-main: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-main);
+      font-size: 18px;
+      line-height: 1.75;
+      background: var(--bg-main);
+      color: var(--text-body);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       ANIMATED BACKGROUND
+    ═══════════════════════════════════════════════════ */
+    #particles-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .formula-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .floating-formula {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 600;
+      opacity: 0;
+      white-space: nowrap;
+      animation: floatFormula linear infinite;
+      text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+      filter: brightness(1.3);
+    }
+
+    @keyframes floatFormula {
+      0% { transform: translateY(110vh) rotate(-5deg); opacity: 0; }
+      5% { opacity: 0.28; }
+      50% { opacity: 0.35; }
+      95% { opacity: 0.28; }
+      100% { transform: translateY(-10vh) rotate(5deg); opacity: 0; }
+    }
+
+    .mesh-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse at 10% 20%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 80%, rgba(236, 72, 153, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(249, 115, 22, 0.14) 0%, transparent 45%),
+        radial-gradient(ellipse at 30% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 50%);
+      animation: meshShift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes meshShift {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      50% { filter: hue-rotate(15deg) brightness(1.08); }
+      100% { filter: hue-rotate(-10deg) brightness(1.04); }
+    }
+
+    .content-wrapper {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════════════════ */
+    .navbar-actal {
+      backdrop-filter: blur(24px) saturate(200%);
+      background: rgba(255, 255, 255, 0.7) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 12px 0;
+      transition: all 0.4s var(--ease);
+    }
+
+    .navbar-actal.scrolled {
+      background: rgba(255, 255, 255, 0.92) !important;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .navbar-brand-custom {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: var(--grad-hero);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-text {
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-link-custom {
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      color: var(--text-body) !important;
+      padding: 10px 18px !important;
+      border-radius: 10px;
+      transition: all 0.3s var(--ease);
+    }
+
+    .nav-link-custom:hover, .nav-link-custom.active {
+      color: var(--c-indigo) !important;
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       GLASS CARD
+    ═══════════════════════════════════════════════════ */
+    .glass-card {
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease);
+      overflow: hidden;
+    }
+
+    .glass-card:hover {
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-4px);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SECTION HEADINGS
+    ═══════════════════════════════════════════════════ */
+    .section-space { padding: 120px 0; }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .badge-dtl { background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12)); color: var(--c-indigo); border: 1px solid rgba(99,102,241,0.2); }
+    .badge-ceo { background: linear-gradient(135deg, rgba(6,182,212,0.12), rgba(14,165,233,0.12)); color: var(--c-cyan); border: 1px solid rgba(6,182,212,0.2); }
+    .badge-strab { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(34,197,94,0.12)); color: var(--c-emerald); border: 1px solid rgba(16,185,129,0.2); }
+    .badge-panic { background: linear-gradient(135deg, rgba(244,63,94,0.12), rgba(236,72,153,0.12)); color: var(--c-rose); border: 1px solid rgba(244,63,94,0.2); }
+
+    .section-title {
+      font-size: clamp(40px, 6vw, 64px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      color: var(--text-dark);
+    }
+
+    .gradient-text {
+      background: var(--grad-hero);
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 5s ease infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+      100% { background-position: 0% center; }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════ */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding-top: 80px;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.25;
+      animation: heroGlow 8s ease-in-out infinite alternate;
+    }
+
+    .hero-glow-1 { background: var(--c-indigo); top: -100px; left: -100px; }
+    .hero-glow-2 { background: var(--c-fuchsia); bottom: -100px; right: -100px; animation-delay: -3s; }
+    .hero-glow-3 { background: var(--c-cyan); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -6s; }
+
+    @keyframes heroGlow {
+      0% { transform: scale(1) translate(0,0); }
+      100% { transform: scale(1.3) translate(30px, -20px); }
+    }
+
+    .hero-title {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 0.95;
+    }
+
+    .hero-sub {
+      font-size: 22px;
+      color: var(--text-body);
+      max-width: 650px;
+      line-height: 1.8;
+    }
+
+    .hero-badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 28px;
+      border-radius: 100px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(12px);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .live-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--c-emerald);
+      box-shadow: 0 0 12px var(--c-emerald);
+      animation: livePulse 1.5s infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: 0.4; }
+    }
+
+    /* Pillar Cards */
+    .pillar-card {
+      padding: 28px;
+      border-radius: 20px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(20px);
+      cursor: pointer;
+      transition: all 0.5s var(--ease);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillar-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      transition: height 0.4s var(--ease);
+    }
+
+    .pillar-card:hover::before { height: 6px; }
+    .pillar-card.dtl::before { background: var(--grad-dtl); }
+    .pillar-card.ceo::before { background: var(--grad-ceo); }
+    .pillar-card.strab::before { background: var(--grad-strab); }
+
+    .pillar-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .pillar-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .pillar-card.dtl .pillar-icon { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15)); }
+    .pillar-card.ceo .pillar-icon { background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(14,165,233,0.15)); }
+    .pillar-card.strab .pillar-icon { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.15)); }
+
+    .pillar-card h3 { font-size: 24px; font-weight: 800; color: var(--text-dark); }
+    .pillar-card p { font-size: 16px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+
+    /* ═══════════════════════════════════════════════════
+       ARCHITECTURE FLOW
+    ═══════════════════════════════════════════════════ */
+    .arch-flow-node {
+      padding: 24px 28px;
+      border-radius: 20px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(16px);
+      text-align: center;
+      position: relative;
+    }
+
+    .arch-flow-node h4 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .arch-flow-node p { font-size: 16px; color: var(--text-muted); line-height: 1.6; }
+
+    .flow-connector {
+      width: 3px;
+      height: 50px;
+      margin: 0 auto;
+      position: relative;
+      overflow: visible;
+    }
+
+    .flow-connector::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 4px;
+    }
+
+    .flow-connector .packet {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 16px currentColor;
+      animation: packetFlow 2s ease-in-out infinite;
+    }
+
+    @keyframes packetFlow {
+      0% { top: -12px; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { top: calc(100% + 12px); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       BLOCKCHAIN SECTION
+    ═══════════════════════════════════════════════════ */
+    .blockchain-strip {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 24px 12px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .blockchain-strip::-webkit-scrollbar { height: 6px; }
+    .blockchain-strip::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 3px; }
+    .blockchain-strip::-webkit-scrollbar-thumb { background: var(--c-indigo); border-radius: 3px; }
+
+    .block-item {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+    }
+
+    .block-cube {
+      width: 240px;
+      padding: 22px;
+      border-radius: 18px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      flex-shrink: 0;
+      opacity: 0;
+      transform: scale(0.7) rotateY(20deg);
+      transition: all 0.6s var(--ease);
+    }
+
+    .block-cube.minted {
+      opacity: 1;
+      transform: scale(1) rotateY(0);
+    }
+
+    .block-cube.minting {
+      border-color: var(--c-indigo);
+      box-shadow: 0 0 40px rgba(99,102,241,0.35), inset 0 0 20px rgba(99,102,241,0.1);
+      animation: cubeMint 0.8s var(--ease);
+    }
+
+    @keyframes cubeMint {
+      0% { transform: scale(0.7) rotateY(20deg); box-shadow: 0 0 0 rgba(99,102,241,0); }
+      50% { transform: scale(1.05) rotateY(-5deg); box-shadow: 0 0 60px rgba(99,102,241,0.5); }
+      100% { transform: scale(1) rotateY(0); }
+    }
+
+    .block-cube.smart-contract {
+      border-color: var(--c-rose);
+      background: linear-gradient(135deg, rgba(244,63,94,0.05), rgba(236,72,153,0.05));
+      box-shadow: 0 0 30px rgba(244,63,94,0.2);
+    }
+
+    .block-id { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--c-indigo); }
+    .block-hash-display {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.04);
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin: 8px 0;
+      word-break: break-all;
+    }
+
+    .block-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+    .block-row .k { color: var(--text-muted); }
+    .block-row .v { font-family: var(--font-mono); font-weight: 600; }
+    .v-ok { color: var(--c-emerald); }
+    .v-warn { color: var(--c-amber); }
+    .v-crit { color: var(--c-rose); }
+
+    .chain-link {
+      width: 36px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--c-indigo), var(--c-violet));
+      border-radius: 4px;
+      position: relative;
+      flex-shrink: 0;
+      overflow: visible;
+    }
+
+    .chain-link .spark {
+      position: absolute;
+      top: 50%; left: -4px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--c-violet);
+      box-shadow: 0 0 14px var(--c-violet);
+      transform: translateY(-50%);
+      animation: sparkTravel 1.8s ease-in-out infinite;
+    }
+
+    @keyframes sparkTravel {
+      0% { left: -4px; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { left: calc(100% - 6px); opacity: 0; }
+    }
+
+    /* Telemetry */
+    .tele-card {
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      transition: all 0.4s var(--ease);
+    }
+
+    .tele-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-glow); }
+
+    .tele-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .tele-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .tele-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1.2s var(--ease);
+      position: relative;
+    }
+
+    .tele-bar-fill::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 20px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6));
+      border-radius: 4px;
+      animation: barShine 2s ease-in-out infinite;
+    }
+
+    @keyframes barShine {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PANIC SIMULATION
+    ═══════════════════════════════════════════════════ */
+    .panic-simulator {
+      border-radius: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .panic-header {
+      padding: 32px;
+      background: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panic-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.02) 2px,
+        rgba(255,255,255,0.02) 4px
+      );
+    }
+
+    .panic-body { padding: 32px; background: var(--bg-glass-strong); }
+
+    /* Elevator Visual */
+    .elevator-visual {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .shaft {
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(180deg, rgba(99,102,241,0.03), rgba(99,102,241,0.01));
+    }
+
+    .shaft-floor {
+      height: 80px;
+      border-bottom: 1px dashed rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    .shaft-floor:last-child { border-bottom: none; }
+
+    .floor-num {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 40px;
+    }
+
+    .floor-people {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .person-icon {
+      font-size: 22px;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+
+    .person-icon.trapped {
+      opacity: 1;
+      animation: personPanic 0.5s ease-in-out infinite alternate;
+      font-size: 28px;
+    }
+
+    @keyframes personPanic {
+      0% { transform: translateX(-2px); }
+      100% { transform: translateX(2px); }
+    }
+
+    .robot-icon {
+      font-size: 18px;
+      animation: robotIdle 2s ease-in-out infinite;
+    }
+
+    @keyframes robotIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    .cabin-box {
+      position: absolute;
+      right: 16px;
+      width: 50px;
+      height: 70px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05));
+      border: 2px solid var(--c-indigo);
+      box-shadow: 0 0 24px rgba(99,102,241,0.2);
+      transition: top 1.8s var(--ease);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      z-index: 5;
+    }
+
+    .cabin-box.panic-mode {
+      border-color: var(--c-rose);
+      background: linear-gradient(180deg, rgba(244,63,94,0.2), rgba(244,63,94,0.05));
+      box-shadow: 0 0 30px rgba(244,63,94,0.4);
+      animation: cabinAlarm 0.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes cabinAlarm {
+      0% { box-shadow: 0 0 20px rgba(244,63,94,0.3); }
+      100% { box-shadow: 0 0 40px rgba(244,63,94,0.6); }
+    }
+
+    .cabin-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--c-indigo);
+    }
+
+    .cabin-box.panic-mode .cabin-label { color: var(--c-rose); }
+
+    /* Status Panel */
+    .status-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .status-event {
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: all 0.5s var(--ease);
+    }
+
+    .status-event.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .event-dot-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 24px;
+      flex-shrink: 0;
+    }
+
+    .event-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 3px solid;
+      background: white;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .event-dot.active::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid;
+      border-color: inherit;
+      opacity: 0.3;
+      animation: dotPing 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotPing {
+      0% { transform: scale(1); opacity: 0.3; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .event-line {
+      width: 2px;
+      height: 24px;
+      background: rgba(0,0,0,0.08);
+    }
+
+    .event-content {
+      padding-bottom: 20px;
+    }
+
+    .event-time {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .event-text {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .event-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PRIORITY CALCULATOR
+    ═══════════════════════════════════════════════════ */
+    .calc-panel {
+      padding: 32px;
+      border-radius: 24px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+    }
+
+    .slider-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-body);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-range::-webkit-slider-thumb {
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+    }
+
+    .pi-display {
+      text-align: center;
+      padding: 28px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.06), rgba(59,130,246,0.06));
+      border: 1px solid rgba(6,182,212,0.15);
+    }
+
+    .pi-number {
+      font-family: var(--font-mono);
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1;
+      background: var(--grad-ceo);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: all 0.3s;
+    }
+
+    .pi-level {
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 14px;
+    }
+
+    .pi-critical { background: rgba(244,63,94,0.12); color: var(--c-rose); }
+    .pi-high { background: rgba(245,158,11,0.12); color: var(--c-amber); }
+    .pi-medium { background: rgba(6,182,212,0.12); color: var(--c-cyan); }
+    .pi-low { background: rgba(16,185,129,0.12); color: var(--c-emerald); }
+
+    /* ═══════════════════════════════════════════════════
+       STRAB ROBOT SECTION
+    ═══════════════════════════════════════════════════ */
+    .robot-card {
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      transition: all 0.4s var(--ease);
+      cursor: pointer;
+    }
+
+    .robot-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(16,185,129,0.15);
+    }
+
+    .robot-card.bidding {
+      border-color: var(--c-emerald);
+      box-shadow: 0 0 30px rgba(16,185,129,0.2);
+      animation: robotBidPulse 1s var(--ease);
+    }
+
+    @keyframes robotBidPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .robot-avatar {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .battery-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .battery-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s var(--ease);
+    }
+
+    /* Auction Feed */
+    .auction-feed {
+      max-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px;
+      border-radius: 20px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+    }
+
+    .auction-feed::-webkit-scrollbar { width: 4px; }
+    .auction-feed::-webkit-scrollbar-thumb { background: var(--c-emerald); border-radius: 2px; }
+
+    .feed-entry {
+      padding: 16px 20px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.02);
+      border-left: 5px solid;
+      font-size: 15px;
+      animation: feedSlide 0.5s var(--ease) backwards;
+    }
+
+    @keyframes feedSlide {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .feed-entry.bid { border-color: var(--c-emerald); }
+    .feed-entry.yield { border-color: var(--c-amber); }
+    .feed-entry.move { border-color: var(--c-indigo); }
+    .feed-entry.alert { border-color: var(--c-rose); }
+
+    .feed-time { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+    .feed-msg { color: var(--text-body); font-size: 15px; line-height: 1.5; }
+    .feed-msg strong { color: var(--text-dark); }
+
+    /* Gauge */
+    .occ-gauge {
+      width: 120px; height: 120px;
+      position: relative;
+    }
+
+    .occ-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .occ-gauge circle { fill: none; stroke-linecap: round; }
+    .gauge-track { stroke: rgba(0,0,0,0.06); stroke-width: 10; }
+    .gauge-value { stroke-width: 10; stroke-dasharray: 314; stroke-dashoffset: 314; transition: all 1s var(--ease); }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       COMPARISON TABLE
+    ═══════════════════════════════════════════════════ */
+    .comparison-wrap {
+      border-radius: 24px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      overflow: hidden;
+    }
+
+    .table-actal {
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .table-actal thead th {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      font-weight: 800;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      padding: 20px 24px;
+      border-bottom: 2px solid rgba(0,0,0,0.06);
+    }
+
+    .table-actal thead th:last-child { color: var(--c-indigo); }
+    .table-actal tbody td { padding: 18px 24px; vertical-align: middle; font-size: 16px; line-height: 1.6; }
+    .table-actal tbody td:last-child { color: var(--c-emerald); font-weight: 600; }
+    .table-actal tbody tr:hover { background: rgba(99,102,241,0.03); }
+
+    /* ═══════════════════════════════════════════════════
+       SPRINT TIMELINE
+    ═══════════════════════════════════════════════════ */
+    .sprint-card {
+      border-radius: 24px;
+      background: var(--bg-glass-strong);
+      border: 1px solid var(--border-glass);
+      overflow: hidden;
+      transition: all 0.4s var(--ease);
+    }
+
+    .sprint-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-glow); }
+
+    .sprint-header {
+      padding: 24px 28px;
+      color: white;
+    }
+
+    .sprint-card.s1 .sprint-header { background: var(--grad-dtl); }
+    .sprint-card.s2 .sprint-header { background: var(--grad-ceo); }
+
+    .sprint-body {
+      padding: 24px 28px;
+    }
+
+    .sprint-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      font-size: 18px;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .sprint-item:last-child { border-bottom: none; }
+
+    .sprint-check {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .s1 .sprint-check { background: rgba(99,102,241,0.1); color: var(--c-indigo); }
+    .s2 .sprint-check { background: rgba(6,182,212,0.1); color: var(--c-cyan); }
+
+    /* ═══════════════════════════════════════════════════
+       ACTION BUTTONS — METALLIC GRADIENTS
+    ═══════════════════════════════════════════════════ */
+    .btn-sim {
+      padding: 16px 32px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: linear-gradient(145deg, #e8eaf0 0%, #c8ccd8 30%, #e2e4ec 60%, #d4d7e2 100%);
+      font-family: var(--font-main);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.35s var(--ease);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .btn-sim:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+      background: linear-gradient(145deg, #f0f2f8 0%, #d8dce8 30%, #eef0f6 60%, #dfe2ee 100%);
+    }
+
+    .btn-sim.active {
+      background: linear-gradient(145deg, #7c7ff5 0%, #5558e8 30%, #8b8ef7 50%, #6366f1 70%, #4f46e5 100%);
+      color: white;
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .btn-panic {
+      background: linear-gradient(145deg, #ff6b81 0%, #f43f5e 25%, #ff7b8f 50%, #e8354d 75%, #d42844 100%);
+      color: white;
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 4px 20px rgba(244,63,94,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .btn-panic:hover {
+      box-shadow: 0 10px 36px rgba(244,63,94,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+      background: linear-gradient(145deg, #ff7e92 0%, #f85070 25%, #ff8da0 50%, #ec4060 75%, #d83050 100%);
+      transform: translateY(-3px);
+    }
+
+    /* Gold Metallic Variant */
+    .btn-gold {
+      background: linear-gradient(145deg, #fde68a 0%, #f59e0b 25%, #fbbf24 50%, #d97706 75%, #b45309 100%);
+      color: #422006;
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 4px 20px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .btn-gold:hover {
+      box-shadow: 0 10px 36px rgba(245,158,11,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+      transform: translateY(-3px);
+    }
+
+    /* Emerald Metallic Variant */
+    .btn-emerald {
+      background: linear-gradient(145deg, #6ee7b7 0%, #10b981 25%, #34d399 50%, #059669 75%, #047857 100%);
+      color: white;
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 4px 20px rgba(16,185,129,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .btn-emerald:hover {
+      box-shadow: 0 10px 36px rgba(16,185,129,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+      transform: translateY(-3px);
+    }
+
+    /* Footer */
+    .footer-section {
+      padding: 60px 0;
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .footer-section p { font-size: 16px; color: var(--text-muted); }
+
+    /* Equation Card */
+    .equation-showcase {
+      padding: 32px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04));
+      border: 1px solid rgba(99,102,241,0.12);
+      text-align: center;
+    }
+
+    .equation-code {
+      font-family: var(--font-mono);
+      font-size: clamp(18px, 3vw, 28px);
+      font-weight: 600;
+      color: var(--c-indigo);
+      padding: 20px 32px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 14px;
+      display: inline-block;
+      border: 1px solid rgba(99,102,241,0.1);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RESPONSIVE FLEX LAYOUT
+    ═══════════════════════════════════════════════════ */
+    .container {
+      max-width: 1320px;
+    }
+
+    /* Flex wrappers for all major sections */
+    .flex-row-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    /* Large screens */
+    @media (min-width: 1200px) {
+      body { font-size: 19px; }
+      .section-title { font-size: clamp(44px, 6vw, 72px); }
+      .hero-title { font-size: clamp(56px, 9vw, 104px); }
+      .hero-sub { font-size: 24px; }
+      .section-badge { font-size: 16px; padding: 12px 28px; }
+      .pi-number { font-size: 80px; }
+      .block-cube { width: 260px; padding: 24px; }
+      .auction-feed { max-height: 500px; }
+    }
+
+    /* Tablets */
+    @media (max-width: 991px) {
+      .section-space { padding: 80px 0; }
+      .hero-section { padding-top: 100px; }
+      .hero-title { letter-spacing: -2px; }
+      .building-vis, .arch-split { flex-direction: column; }
+      .priority-sliders { grid-template-columns: 1fr; }
+      .pipeline-flow { gap: 16px; }
+      .block-cube { width: 220px; }
+    }
+
+    /* Mobile */
+    @media (max-width: 767px) {
+      body { font-size: 17px; }
+      .section-space { padding: 60px 0; }
+      .hero-section { padding-top: 90px; min-height: auto; padding-bottom: 60px; }
+      .hero-title { font-size: clamp(36px, 10vw, 56px); letter-spacing: -1.5px; }
+      .hero-sub { font-size: 18px; }
+      .section-title { font-size: clamp(32px, 7vw, 44px); }
+      .section-badge { font-size: 13px; padding: 8px 18px; }
+      .hero-badge-live { font-size: 14px; padding: 10px 18px; }
+      .nav-link-custom { font-size: 15px !important; }
+
+      .glass-card { border-radius: 18px; }
+      .panic-header { padding: 20px; }
+      .panic-body { padding: 20px; }
+      .calc-panel { padding: 20px; }
+      .equation-showcase { padding: 20px; }
+
+      .btn-sim { padding: 14px 20px; font-size: 15px; width: 100%; text-align: center; }
+      .d-flex.gap-3.flex-wrap { flex-direction: column; }
+
+      .pillar-card { padding: 20px; }
+      .pillar-card h3 { font-size: 20px; }
+      .pillar-card p { font-size: 15px; }
+
+      .tele-card { padding: 16px; }
+      .block-cube { width: 200px; padding: 16px; }
+      .blockchain-strip { padding: 16px 8px; }
+
+      .sprint-item { font-size: 16px; padding: 12px 0; }
+      .sprint-header { padding: 18px 20px; }
+      .sprint-body { padding: 18px 20px; }
+
+      .event-text { font-size: 15px; }
+      .event-desc { font-size: 14px; }
+      .feed-entry { font-size: 14px; padding: 14px 16px; }
+      .feed-msg { font-size: 14px; }
+
+      .pi-number { font-size: 48px; }
+      .pi-level { font-size: 14px; padding: 8px 16px; }
+
+      .table-actal { font-size: 14px; }
+      .table-actal thead th { font-size: 12px; padding: 14px 12px; }
+      .table-actal tbody td { padding: 12px; font-size: 14px; }
+
+      .occ-gauge { width: 100px; height: 100px; }
+      .gauge-center { font-size: 22px; }
+    }
+
+    /* Small mobile */
+    @media (max-width: 480px) {
+      body { font-size: 16px; }
+      .hero-title { font-size: 32px; letter-spacing: -1px; }
+      .hero-sub { font-size: 16px; }
+      .section-title { font-size: 28px; }
+      .container { padding-left: 16px; padding-right: 16px; }
+      .btn-sim { font-size: 14px; padding: 12px 16px; }
+      .block-cube { width: 180px; padding: 14px; }
+      .block-row { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ ANIMATED BACKGROUND ═══ -->
+  <div class="mesh-gradient"></div>
+  <div id="particles-bg"></div>
+  <div class="formula-bg" id="formulaBg"></div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content-wrapper">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-actal" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand-custom" href="#">
+          <div class="brand-icon">A</div>
+          <span class="brand-text">ACTAL</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navContent">
+          <ul class="navbar-nav ms-auto gap-1">
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#architecture">Arquitetura</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#dtl">DTL</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#panic">Simulação Pânico</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#ceo">CEO</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#strab">STRAB</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="#compare">Comparativo</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="hero-section" id="hero">
+      <div class="hero-glow hero-glow-1"></div>
+      <div class="hero-glow hero-glow-2"></div>
+      <div class="hero-glow hero-glow-3"></div>
+
+      <div class="container">
+        <div class="row align-items-center min-vh-100">
+          <div class="col-lg-7" data-aos="fade-right" data-aos-duration="1200">
+            <div class="hero-badge-live mb-4">
+              <span class="live-dot"></span>
+              Protótipo Interativo — Challenge FIAP 2026
+            </div>
+            <h1 class="hero-title mb-4">
+              <span class="gradient-text">ACTAL</span><br>Framework
+            </h1>
+            <p class="hero-sub mb-5">
+              <strong>Aegis Cognitive Transit &amp; Auditable Ledger</strong> — Engenharia de software disruptiva
+              para verticalização inteligente, combinando blockchain, IA e IoT para elevadores OTIS.
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+              <a href="#panic" class="btn-sim btn-panic px-4 py-3 text-decoration-none">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>Simular Pânico
+              </a>
+              <a href="#strab" class="btn-sim btn-emerald px-4 py-3 text-decoration-none">
+                <i class="bi bi-robot me-2"></i>Ver Robôs
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-5 mt-5 mt-lg-0" data-aos="fade-left" data-aos-duration="1200" data-aos-delay="300">
+            <div class="row g-3">
+              <div class="col-12">
+                <a href="#dtl" class="pillar-card dtl">
+                  <div class="pillar-icon">🔗</div>
+                  <h3>DTL</h3>
+                  <p>Distributed Telemetry Ledger — Blockchain Permissionada</p>
+                </a>
+              </div>
+              <div class="col-12">
+                <a href="#ceo" class="pillar-card ceo">
+                  <div class="pillar-icon">🧠</div>
+                  <h3>CEO</h3>
+                  <p>Cognitive Event Orchestrator — Motor NLP & Despacho</p>
+                </a>
+              </div>
+              <div class="col-12">
+                <a href="#strab" class="pillar-card strab">
+                  <div class="pillar-icon">🤖</div>
+                  <h3>STRAB</h3>
+                  <p>Spatial-Temporal Robotic Auction Broker — Leilão IoT</p>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ ARCHITECTURE ═══════════ -->
+    <section class="section-space" id="architecture">
+      <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+          <div class="section-badge badge-dtl">⚡ Visão Geral</div>
+          <h2 class="section-title">Arquitetura <span class="gradient-text">Holística</span></h2>
+          <p class="text-muted mt-3 mx-auto" style="max-width:600px">
+            Fluxo de dados desde os sensores Edge até os módulos cognitivos em nuvem.
+          </p>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <!-- Edge -->
+            <div class="arch-flow-node mb-0" data-aos="zoom-in" data-aos-delay="0">
+              <h4 style="color:var(--c-amber)"><i class="bi bi-cpu"></i> COMPONENTE EDGE</h4>
+              <p>Microcontrolador · HSM · Sensor de Peso · ToF 3D</p>
+            </div>
+            <div class="flow-connector" style="background:linear-gradient(180deg,var(--c-amber),var(--c-indigo));">
+              <div class="packet" style="color:var(--c-indigo); background:var(--c-indigo);"></div>
+            </div>
+            <!-- DTL -->
+            <div class="arch-flow-node mb-0" data-aos="zoom-in" data-aos-delay="150">
+              <h4 style="color:var(--c-indigo)"><i class="bi bi-link-45deg"></i> DISTRIBUTED TELEMETRY LEDGER</h4>
+              <p>Hyperledger Fabric · Smart Contracts · Blocos Criptográficos</p>
+            </div>
+            <div class="flow-connector" style="background:linear-gradient(180deg,var(--c-indigo),var(--c-cyan));">
+              <div class="packet" style="color:var(--c-cyan); background:var(--c-cyan); animation-delay:-0.8s;"></div>
+            </div>
+            <!-- CEO + STRAB -->
+            <div class="row g-3">
+              <div class="col-md-6" data-aos="zoom-in" data-aos-delay="300">
+                <div class="arch-flow-node h-100">
+                  <h4 style="color:var(--c-cyan)"><i class="bi bi-brain"></i> CEO</h4>
+                  <p>Motor NLP · Triagem · Despacho Multi-dimensional</p>
+                </div>
+              </div>
+              <div class="col-md-6" data-aos="zoom-in" data-aos-delay="400">
+                <div class="arch-flow-node h-100">
+                  <h4 style="color:var(--c-emerald)"><i class="bi bi-robot"></i> STRAB</h4>
+                  <p>Leilão de Prioridades · Human-Yield Protocol · IoT</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ DTL — BLOCKCHAIN ═══════════ -->
+    <section class="section-space" id="dtl" style="background: linear-gradient(180deg, transparent, rgba(99,102,241,0.04), transparent);">
+      <div class="container">
+        <div class="mb-5" data-aos="fade-right">
+          <div class="section-badge badge-dtl">🔗 Pilar 1</div>
+          <h2 class="section-title">Distributed Telemetry<br><span class="gradient-text">Ledger (DTL)</span></h2>
+          <p class="text-muted mt-3" style="max-width:640px">
+            Governança descentralizada via blockchain permissionada. Cada elevador gera blocos criptográficos imutáveis,
+            eliminando disputas judiciais entre construtoras e condomínios.
+          </p>
+        </div>
+
+        <!-- Controls -->
+        <div class="d-flex gap-3 flex-wrap mb-4" data-aos="fade-up">
+          <button class="btn-sim active" onclick="mintBlock()"><i class="bi bi-box me-2"></i>Minerar Bloco</button>
+          <button class="btn-sim btn-gold" onclick="mintSmartContract()"><i class="bi bi-file-earmark-code me-2"></i>Smart Contract</button>
+          <button class="btn-sim btn-emerald" onclick="autoMine()"><i class="bi bi-play-circle me-2"></i>Auto-Mineração</button>
+        </div>
+
+        <div class="blockchain-strip" id="chain" data-aos="fade-up"></div>
+
+        <!-- Telemetry -->
+        <h4 class="fw-bold mt-5 mb-3" data-aos="fade-up">
+          <i class="bi bi-broadcast-pin text-primary me-2"></i>Canais de Telemetria IoT
+        </h4>
+        <div class="row g-3" id="teleGrid" data-aos="fade-up" data-aos-delay="200"></div>
+
+        <!-- MTBF -->
+        <div class="equation-showcase mt-5" data-aos="zoom-in">
+          <p class="text-muted fw-bold text-uppercase small mb-3" style="letter-spacing:2px">Cálculo Dinâmico do MTBF</p>
+          <div class="equation-code">
+            MTBF = Σ( t<sub>falha<sub>i</sub></sub> − t<sub>reparo<sub>i-1</sub></sub> ) / n
+          </div>
+          <p class="text-muted small mt-3">Quando MTBF cai abaixo do limiar → Smart Contract aciona <strong>interdição automática</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PANIC SIMULATION ═══════════ -->
+    <section class="section-space" id="panic" style="background: linear-gradient(180deg, transparent, rgba(244,63,94,0.04), transparent);">
+      <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+          <div class="section-badge badge-panic">🚨 Simulação em Tempo Real</div>
+          <h2 class="section-title">Situação de <span style="color:var(--c-rose)">Pânico</span><br>no Elevador</h2>
+          <p class="text-muted mt-3 mx-auto" style="max-width:640px">
+            Assista o framework ACTAL respondendo a uma situação real de emergência — passageiros presos,
+            NLP processando chamados de socorro, e despacho técnico otimizado.
+          </p>
+        </div>
+
+        <div class="panic-simulator glass-card" data-aos="zoom-in">
+          <div class="panic-header">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h4 class="fw-bold mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>ACTAL Emergency Response</h4>
+              <span class="badge bg-danger rounded-pill px-3 py-2" id="panicStatus">STANDBY</span>
+            </div>
+            <p class="mb-0 opacity-75 small">Edifício Armani Casa Residences — Balneário Camboriú — Elevador #3</p>
+          </div>
+          <div class="panic-body">
+            <div class="row g-4">
+              <!-- Elevator Column -->
+              <div class="col-lg-5">
+                <h6 class="fw-bold mb-3"><i class="bi bi-building me-2"></i>Visualização do Elevador</h6>
+                <div class="elevator-visual">
+                  <div class="shaft" id="panicShaft">
+                    <!-- Floors injected by JS -->
+                  </div>
+                  <div class="cabin-box" id="panicCabin" style="top: 325px;">
+                    <span class="cabin-label" id="panicCabinLabel">1F</span>
+                    <span class="cabin-label" id="panicOcc">45%</span>
+                  </div>
+                </div>
+                <div class="text-center mt-3">
+                  <button class="btn-sim btn-panic" onclick="startPanicSim()">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>Iniciar Simulação de Pânico
+                  </button>
+                </div>
+              </div>
+
+              <!-- Status Timeline -->
+              <div class="col-lg-7">
+                <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Timeline de Resposta ACTAL</h6>
+                <div class="status-timeline" id="panicTimeline">
+                  <div class="status-event show">
+                    <div class="event-dot-col">
+                      <div class="event-dot" style="border-color:var(--text-muted)"></div>
+                      <div class="event-line"></div>
+                    </div>
+                    <div class="event-content">
+                      <div class="event-time">00:00</div>
+                      <div class="event-text">Sistema em Standby</div>
+                      <div class="event-desc">Aguardando ocorrência. Todos os sensores operacionais.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CEO — PRIORITY CALCULATOR ═══════════ -->
+    <section class="section-space" id="ceo" style="background: linear-gradient(180deg, transparent, rgba(6,182,212,0.04), transparent);">
+      <div class="container">
+        <div class="mb-5" data-aos="fade-right">
+          <div class="section-badge badge-ceo">🧠 Pilar 2</div>
+          <h2 class="section-title">Cognitive Event<br><span class="gradient-text">Orchestrator (CEO)</span></h2>
+          <p class="text-muted mt-3" style="max-width:640px">
+            Motor NLP integrado, cálculo do Índice de Prioridade Pᵢ dinâmico e despacho técnico multi-dimensional
+            correlacionando certificação, inventário RFID e logística preditiva.
+          </p>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="row g-3 mb-5">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+            <div class="glass-card p-4 h-100 text-center pipeline-card" data-step="1">
+              <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px">
+                <i class="bi bi-chat-dots-fill text-primary fs-4"></i>
+              </div>
+              <h5 class="fw-bold">1. Ingestão NLP</h5>
+              <p class="small text-muted mb-0">Análise de áudio eView, mensagens de pânico e registros de anomalias em tempo real.</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="150">
+            <div class="glass-card p-4 h-100 text-center pipeline-card" data-step="2">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;background:rgba(6,182,212,0.1)">
+                <i class="bi bi-calculator-fill fs-4" style="color:var(--c-cyan)"></i>
+              </div>
+              <h5 class="fw-bold">2. Cálculo Pᵢ</h5>
+              <p class="small text-muted mb-0">Equação parametrizada com dados de telemetria, ToF 3D e peso regulatório.</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="glass-card p-4 h-100 text-center pipeline-card" data-step="3">
+              <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;background:rgba(16,185,129,0.1)">
+                <i class="bi bi-geo-alt-fill fs-4" style="color:var(--c-emerald)"></i>
+              </div>
+              <h5 class="fw-bold">3. Despacho</h5>
+              <p class="small text-muted mb-0">Certificação técnica × Inventário RFID × Logística preditiva de trânsito.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculator -->
+        <div class="calc-panel" data-aos="fade-up">
+          <h5 class="fw-bold mb-4"><i class="bi bi-sliders me-2" style="color:var(--c-cyan)"></i>Simulador Interativo do Índice de Prioridade</h5>
+          <div class="row g-4">
+            <div class="col-md-8">
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label class="slider-label mb-2">U<sub>telemetria</sub> — Desvio de Segurança</label>
+                  <input type="range" class="form-range" id="sU" min="0" max="100" value="60" oninput="recalc()">
+                  <span class="fw-bold small" style="font-family:var(--font-mono);color:var(--c-indigo)" id="vU">0.60</span>
+                </div>
+                <div class="col-sm-6">
+                  <label class="slider-label mb-2">P<sub>preso</sub> — Passageiro Preso</label>
+                  <input type="range" class="form-range" id="sP" min="0" max="1" value="0" oninput="recalc()">
+                  <span class="fw-bold small" style="font-family:var(--font-mono);color:var(--c-rose)" id="vP">0</span>
+                </div>
+                <div class="col-sm-6">
+                  <label class="slider-label mb-2">C<sub>regulatório</sub> — Peso Institucional</label>
+                  <input type="range" class="form-range" id="sC" min="0" max="100" value="40" oninput="recalc()">
+                  <span class="fw-bold small" style="font-family:var(--font-mono);color:var(--c-amber)" id="vC">0.40</span>
+                </div>
+                <div class="col-sm-6">
+                  <label class="slider-label mb-2">L<sub>histórico</sub> — Falhas Recorrentes (90d)</label>
+                  <input type="range" class="form-range" id="sL" min="0" max="100" value="30" oninput="recalc()">
+                  <span class="fw-bold small" style="font-family:var(--font-mono);color:var(--c-emerald)" id="vL">0.30</span>
+                </div>
+              </div>
+              <div class="equation-showcase mt-4 p-3">
+                <code class="small" style="color:var(--c-indigo)">Pᵢ = 0.35·U + 0.30·P + 0.20·C + 0.15·L</code>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-center">
+              <div class="pi-display w-100">
+                <p class="small text-muted fw-bold mb-2">ÍNDICE DE PRIORIDADE</p>
+                <div class="pi-number" id="piNum">0.00</div>
+                <div class="pi-level pi-medium mt-2" id="piLvl">📋 Prioridade Média</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dispatch -->
+        <div class="row g-3 mt-4" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-md-4">
+            <div class="glass-card p-4">
+              <p class="small text-muted fw-bold text-uppercase mb-2"><i class="bi bi-award me-2"></i>Certificação</p>
+              <h4 class="fw-bold" style="color:var(--c-cyan)">Otis Gen3™</h4>
+              <p class="small text-muted mb-0">Técnico certificado para modelo com falha</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="glass-card p-4">
+              <p class="small text-muted fw-bold text-uppercase mb-2"><i class="bi bi-box-seam me-2"></i>Inventário RFID</p>
+              <h4 class="fw-bold" style="color:var(--c-emerald)">✓ OP-4200</h4>
+              <p class="small text-muted mb-0">Sensor de porta confirmado no furgão #12</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="glass-card p-4">
+              <p class="small text-muted fw-bold text-uppercase mb-2"><i class="bi bi-truck me-2"></i>ETA Otimizado</p>
+              <h4 class="fw-bold" style="color:var(--c-amber)" id="etaDisp">12 min</h4>
+              <p class="small text-muted mb-0">Rota recalculada com trânsito em tempo real</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ STRAB — ROBOTS ═══════════ -->
+    <section class="section-space" id="strab" style="background: linear-gradient(180deg, transparent, rgba(16,185,129,0.04), transparent);">
+      <div class="container">
+        <div class="mb-5" data-aos="fade-right">
+          <div class="section-badge badge-strab">🤖 Pilar 3</div>
+          <h2 class="section-title">Spatial-Temporal Robotic<br><span class="gradient-text">Auction Broker</span></h2>
+          <p class="text-muted mt-3" style="max-width:640px">
+            Robôs autônomos submetem lances criptográficos para uso do elevador. O protocolo Human-Yield
+            garante a prioridade de passageiros humanos via sensores ToF 3D.
+          </p>
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap mb-4" data-aos="fade-up">
+          <button class="btn-sim active" onclick="startRobotSim()" id="btnRobotStart"><i class="bi bi-play-fill me-2"></i>Iniciar Simulação</button>
+          <button class="btn-sim btn-emerald" onclick="addNewRobot()"><i class="bi bi-plus-circle me-2"></i>Adicionar Robô</button>
+          <button class="btn-sim btn-gold" onclick="resetRobots()"><i class="bi bi-arrow-counterclockwise me-2"></i>Resetar</button>
+        </div>
+
+        <div class="row g-4">
+          <!-- Robots -->
+          <div class="col-lg-4" data-aos="fade-right">
+            <h6 class="fw-bold mb-3"><i class="bi bi-robot me-2" style="color:var(--c-emerald)"></i>Frota de Robôs</h6>
+            <div class="d-flex flex-column gap-3" id="robotGrid"></div>
+
+            <!-- Gauge -->
+            <div class="glass-card p-4 mt-3">
+              <h6 class="fw-bold mb-3">Ocupação da Cabine</h6>
+              <div class="d-flex align-items-center gap-4">
+                <div class="occ-gauge">
+                  <svg viewBox="0 0 110 110">
+                    <circle class="gauge-track" cx="55" cy="55" r="50" />
+                    <circle class="gauge-value" id="occGauge" cx="55" cy="55" r="50" stroke="var(--c-emerald)" />
+                  </svg>
+                  <div class="gauge-center" id="occLabel">35%</div>
+                </div>
+                <div>
+                  <p class="small text-muted mb-1">Protocolo Human-Yield</p>
+                  <span class="badge rounded-pill px-3 py-2" id="yieldBadge" style="background:rgba(16,185,129,0.12);color:var(--c-emerald)">✓ Embarque liberado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auction Feed -->
+          <div class="col-lg-8" data-aos="fade-left">
+            <h6 class="fw-bold mb-3"><i class="bi bi-card-list me-2" style="color:var(--c-emerald)"></i>Log de Leilão em Tempo Real</h6>
+            <div class="auction-feed" id="robotFeed">
+              <div class="feed-entry move">
+                <div class="feed-time">00:00:00</div>
+                <div class="feed-msg"><strong>STRAB Inicializado</strong> — Aguardando lances de robôs autônomos...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ COMPARISON ═══════════ -->
+    <section class="section-space" id="compare">
+      <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+          <div class="section-badge badge-dtl">📊 Comparativo</div>
+          <h2 class="section-title">Desempenho & <span class="gradient-text">Inovação</span></h2>
+        </div>
+        <div class="comparison-wrap" data-aos="zoom-in">
+          <table class="table table-actal mb-0">
+            <thead>
+              <tr>
+                <th>Recurso</th>
+                <th>Mercado Convencional</th>
+                <th>Otis ONE / OID</th>
+                <th>ACTAL (Proposto)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="fw-bold">Ocorrências</td><td>Registro manual por telefone</td><td>Monitoramento IoT com alertas</td><td>CEO: NLP integrado + cálculo Pᵢ + despacho otimizado</td></tr>
+              <tr><td class="fw-bold">Responsabilidade</td><td>Cadernos físicos</td><td>BD centralizado da fabricante</td><td>DTL: Blockchain imutável + HSM + RIA automático</td></tr>
+              <tr><td class="fw-bold">Robôs</td><td>Sistemas isolados</td><td>APIs; robôs como passageiros</td><td>STRAB: Leilão dinâmico + Human-Yield Protocol</td></tr>
+              <tr><td class="fw-bold">Simulação</td><td>Testes manuais</td><td>Sandbox básico</td><td>Digital Twin WebGL + Three.js + BIM/IFC</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ SPRINTS ═══════════ -->
+    <section class="section-space" id="sprints">
+      <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+          <div class="section-badge badge-ceo">🗓️ Cronograma</div>
+          <h2 class="section-title">Sprints de <span class="gradient-text">Implementação</span></h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+          <div class="col-md-6 col-lg-5" data-aos="fade-right">
+            <div class="sprint-card s1">
+              <div class="sprint-header">
+                <h4 class="fw-bold mb-1">Sprint 1</h4>
+                <p class="mb-0 opacity-75 small">1º Semestre — Concepção & Modelagem</p>
+              </div>
+              <div class="sprint-body">
+                <div class="sprint-item"><span class="sprint-check">✓</span> Vídeo Pitch Comercial (3 min)</div>
+                <div class="sprint-item"><span class="sprint-check">✓</span> Modelagem Conceitual</div>
+                <div class="sprint-item"><span class="sprint-check">✓</span> Diagramas de Classe & Sequência</div>
+                <div class="sprint-item"><span class="sprint-check">✓</span> Validação da Proposta de Valor</div>
+                <div class="sprint-item"><span class="sprint-check">✓</span> Análise de Mercado</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-5" data-aos="fade-left" data-aos-delay="200">
+            <div class="sprint-card s2">
+              <div class="sprint-header">
+                <h4 class="fw-bold mb-1">Sprint 2</h4>
+                <p class="mb-0 opacity-75 small">2º Semestre — MVP & Deploy</p>
+              </div>
+              <div class="sprint-body">
+                <div class="sprint-item"><span class="sprint-check">⚡</span> MVP em Nuvem (Vercel)</div>
+                <div class="sprint-item"><span class="sprint-check">⚡</span> MongoDB / PostgreSQL</div>
+                <div class="sprint-item"><span class="sprint-check">⚡</span> Algoritmo CEO + NLP</div>
+                <div class="sprint-item"><span class="sprint-check">⚡</span> Integração APIs OID</div>
+                <div class="sprint-item"><span class="sprint-check">⚡</span> Digital Twin WebGL (Three.js)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-section">
+      <div class="container">
+        <p class="mb-2"><strong>ACTAL Framework</strong> — Protótipo Interativo © 2026</p>
+        <p class="mb-0">Challenge FIAP 2026 × OTIS Worldwide Corporation · Desenvolvido com 🧠 IA + ⚡ WebTech</p>
+      </div>
+    </footer>
+
+  </div><!-- /content-wrapper -->
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <script>
+    // ═══════════════════════════════════════════════
+    // INIT AOS
+    // ═══════════════════════════════════════════════
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 60
+    });
+
+    // ═══════════════════════════════════════════════
+    // PARTICLES BACKGROUND
+    // ═══════════════════════════════════════════════
+    tsParticles.load("particles-bg", {
+      fullScreen: false,
+      particles: {
+        number: { value: 60, density: { enable: true, area: 1000 } },
+        color: { value: ["#6366f1", "#8b5cf6", "#06b6d4", "#10b981", "#f43f5e", "#f59e0b"] },
+        shape: { type: "circle" },
+        opacity: { value: { min: 0.05, max: 0.15 }, animation: { enable: true, speed: 0.8, minimumValue: 0.03 } },
+        size: { value: { min: 2, max: 6 }, animation: { enable: true, speed: 2, minimumValue: 1 } },
+        move: { enable: true, speed: 0.6, direction: "none", outModes: "bounce" },
+        links: { enable: true, distance: 130, color: "#6366f1", opacity: 0.06, width: 1 }
+      },
+      interactivity: {
+        events: { onHover: { enable: true, mode: "grab" } },
+        modes: { grab: { distance: 180, links: { opacity: 0.15 } } }
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // FLOATING FORMULAS BACKGROUND
+    // ═══════════════════════════════════════════════
+    const formulas = [
+      'MTBF = Σ(t_falha - t_reparo) / n',
+      'Pᵢ = w₁·U + w₂·P + w₃·C + w₄·L',
+      'B = (α·U_tarefa + β·ΔT) / (SoC + ε)',
+      'Σwᵢ = 1.0',
+      'Hash(n) = SHA256(Block_n-1)',
+      'Ocupação > 75% → Yield',
+      'ETA = f(trânsito, distância, Pᵢ)',
+      'SmartContract.execute()',
+      'DTL → CEO → STRAB',
+      'ToF3D.scan() → volumetria'
+    ];
+    const formulaColors = ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#f97316', '#a855f7'];
+    const formulaBg = document.getElementById('formulaBg');
+
+    function spawnFormula() {
+      const el = document.createElement('div');
+      el.className = 'floating-formula';
+      el.textContent = formulas[Math.floor(Math.random() * formulas.length)];
+      el.style.left = Math.random() * 90 + '%';
+      el.style.color = formulaColors[Math.floor(Math.random() * formulaColors.length)];
+      el.style.fontSize = (12 + Math.random() * 8) + 'px';
+      el.style.animationDuration = (18 + Math.random() * 20) + 's';
+      el.style.animationDelay = '0s';
+      formulaBg.appendChild(el);
+      setTimeout(() => el.remove(), 40000);
+    }
+    setInterval(spawnFormula, 2500);
+    for (let i = 0; i < 8; i++) setTimeout(spawnFormula, i * 600);
+
+    // ═══════════════════════════════════════════════
+    // NAVBAR SCROLL
+    // ═══════════════════════════════════════════════
+    const mainNav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      mainNav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ═══════════════════════════════════════════════
+    // GSAP ANIMATIONS
+    // ═══════════════════════════════════════════════
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Pipeline cards glow cycle
+    const pipeCards = document.querySelectorAll('.pipeline-card');
+    let pipeStep = 0;
+    setInterval(() => {
+      pipeCards.forEach((c, i) => {
+        c.style.boxShadow = i === pipeStep ? '0 0 30px rgba(6,182,212,0.2)' : 'var(--shadow-card)';
+        c.style.borderColor = i === pipeStep ? 'var(--c-cyan)' : 'var(--border-glass)';
+      });
+      pipeStep = (pipeStep + 1) % pipeCards.length;
+    }, 2500);
+
+    // ═══════════════════════════════════════════════
+    // DTL — BLOCKCHAIN
+    // ═══════════════════════════════════════════════
+    let bCount = 0;
+    const chain = document.getElementById('chain');
+    const sensors = [
+      { s: 'Acelerômetro', ch: 'Auditoria Mecânica' },
+      { s: 'Op. Porta', ch: 'Falha de Portas' },
+      { s: 'Cinto Flexível', ch: 'Aud. Construtora' },
+      { s: 'Interfone', ch: 'Proteção de Vida' }
+    ];
+
+    function rHash() { return '0x' + Array.from({length:16}, () => Math.floor(Math.random()*16).toString(16)).join(''); }
+
+    function mintBlock() {
+      bCount++;
+      const sn = sensors[Math.floor(Math.random()*sensors.length)];
+      const val = Math.random();
+      const cls = val > 0.7 ? 'v-crit' : val > 0.4 ? 'v-warn' : 'v-ok';
+      const lbl = val > 0.7 ? 'ALERTA' : val > 0.4 ? 'ATENÇÃO' : 'NORMAL';
+
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.innerHTML = `
+        ${bCount > 1 ? '<div class="chain-link"><div class="spark"></div></div>' : ''}
+        <div class="block-cube" id="bc${bCount}">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="block-id">BLOCO #${String(bCount).padStart(4,'0')}</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--c-emerald)"></span>
+          </div>
+          <div class="block-hash-display">${rHash()}</div>
+          <div class="block-row"><span class="k">Sensor</span><span class="v">${sn.s}</span></div>
+          <div class="block-row"><span class="k">Canal</span><span class="v">${sn.ch}</span></div>
+          <div class="block-row"><span class="k">Status</span><span class="v ${cls}">${lbl}</span></div>
+          <div class="block-row"><span class="k">MTBF</span><span class="v">${(Math.random()*2000+500).toFixed(0)}h</span></div>
+        </div>
+      `;
+      chain.appendChild(item);
+      requestAnimationFrame(() => {
+        const cube = document.getElementById(`bc${bCount}`);
+        cube.classList.add('minting');
+        setTimeout(() => cube.classList.add('minted'), 50);
+      });
+      chain.scrollTo({ left: chain.scrollWidth, behavior: 'smooth' });
+    }
+
+    function mintSmartContract() {
+      bCount++;
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.innerHTML = `
+        ${bCount > 1 ? '<div class="chain-link"><div class="spark"></div></div>' : ''}
+        <div class="block-cube minted smart-contract" id="bc${bCount}">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="block-id" style="color:var(--c-rose)">SC #${String(bCount).padStart(4,'0')}</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--c-rose);box-shadow:0 0 8px var(--c-rose)"></span>
+          </div>
+          <div class="block-hash-display">${rHash()}</div>
+          <div class="block-row"><span class="k">Tipo</span><span class="v v-crit">SMART CONTRACT</span></div>
+          <div class="block-row"><span class="k">Ação</span><span class="v v-crit">INTERDIÇÃO</span></div>
+          <div class="block-row"><span class="k">RIA Online</span><span class="v v-warn">ENVIADO ✓</span></div>
+          <div class="block-row"><span class="k">Jurídico</span><span class="v v-ok">AUTENTICADO</span></div>
+        </div>
+      `;
+      chain.appendChild(item);
+      chain.scrollTo({ left: chain.scrollWidth, behavior: 'smooth' });
+    }
+
+    let autoInterval = null;
+    function autoMine() {
+      if (autoInterval) { clearInterval(autoInterval); autoInterval = null; return; }
+      autoInterval = setInterval(() => { Math.random() > 0.8 ? mintSmartContract() : mintBlock(); }, 1800);
+    }
+
+    // Init blocks
+    setTimeout(mintBlock, 400);
+    setTimeout(mintBlock, 900);
+    setTimeout(mintBlock, 1400);
+
+    // ═══════════════════════════════════════════════
+    // TELEMETRY
+    // ═══════════════════════════════════════════════
+    const teleData = [
+      { icon: '📳', name: 'Vibração & Desaceleração', desc: 'Acelerômetro → Auditoria Mecânica', color: '#6366f1' },
+      { icon: '🚪', name: 'Corrente de Travamento', desc: 'Op. Porta → Falha de Portas', color: '#06b6d4' },
+      { icon: '🔩', name: 'Tensão Cintas Planas', desc: 'Cinto Flexível → Aud. Construtora', color: '#10b981' },
+      { icon: '📞', name: 'Continuidade Interfone', desc: 'Loop Analógico → Proteção de Vida', color: '#f59e0b' }
+    ];
+
+    const teleGrid = document.getElementById('teleGrid');
+    teleData.forEach((t, i) => {
+      teleGrid.innerHTML += `
+        <div class="col-sm-6 col-lg-3">
+          <div class="tele-card">
+            <div class="tele-icon" style="background:${t.color}18">${t.icon}</div>
+            <h6 class="fw-bold small">${t.name}</h6>
+            <p class="small text-muted mb-0">${t.desc}</p>
+            <div class="tele-bar"><div class="tele-bar-fill" id="tb${i}" style="width:0%;background:${t.color}"></div></div>
+          </div>
+        </div>
+      `;
+    });
+
+    function animTele() {
+      teleData.forEach((_, i) => {
+        document.getElementById(`tb${i}`).style.width = (25 + Math.random() * 70) + '%';
+      });
+    }
+    setInterval(animTele, 2000);
+    setTimeout(animTele, 800);
+
+    // ═══════════════════════════════════════════════
+    // PANIC SIMULATION
+    // ═══════════════════════════════════════════════
+    const panicShaft = document.getElementById('panicShaft');
+    const panicCabin = document.getElementById('panicCabin');
+    const panicTimeline = document.getElementById('panicTimeline');
+    const panicFloorCount = 6;
+
+    // Build shaft
+    for (let f = panicFloorCount; f >= 1; f--) {
+      const people = f === 3 ? '👤👤👩' : (Math.random() > 0.6 ? '👤' : '');
+      panicShaft.innerHTML += `
+        <div class="shaft-floor" id="pf-${f}">
+          <span class="floor-num">${f}F</span>
+          <div class="floor-people" id="pfp-${f}">${people}</div>
+        </div>
+      `;
+    }
+
+    let panicRunning = false;
+    function movePanicCabin(floor) {
+      const top = (panicFloorCount - floor) * 81 + 5;
+      panicCabin.style.top = top + 'px';
+      document.getElementById('panicCabinLabel').textContent = floor + 'F';
+    }
+
+    function addPanicEvent(color, icon, title, desc, isActive) {
+      const ev = document.createElement('div');
+      ev.className = 'status-event';
+      ev.innerHTML = `
+        <div class="event-dot-col">
+          <div class="event-dot ${isActive ? 'active' : ''}" style="border-color:${color}"></div>
+          <div class="event-line"></div>
+        </div>
+        <div class="event-content">
+          <div class="event-time">${new Date().toLocaleTimeString('pt-BR',{hour12:false})}</div>
+          <div class="event-text">${icon} ${title}</div>
+          <div class="event-desc">${desc}</div>
+        </div>
+      `;
+      panicTimeline.appendChild(ev);
+      requestAnimationFrame(() => ev.classList.add('show'));
+      panicTimeline.scrollTop = panicTimeline.scrollHeight;
+    }
+
+    function startPanicSim() {
+      if (panicRunning) return;
+      panicRunning = true;
+      const badge = document.getElementById('panicStatus');
+
+      // Clear timeline
+      panicTimeline.innerHTML = '';
+
+      // Step 1: Normal operation
+      badge.textContent = 'ATIVO'; badge.className = 'badge bg-success rounded-pill px-3 py-2';
+      movePanicCabin(1);
+      addPanicEvent('var(--c-emerald)', '✅', 'Elevador em operação normal', 'Cabine no 1F, 2 passageiros embarcando.', false);
+
+      // Step 2: Moving up
+      setTimeout(() => {
+        movePanicCabin(4);
+        addPanicEvent('var(--c-cyan)', '🔼', 'Subindo para 4F', 'Chamado registrado no 4º andar. Velocidade nominal.', false);
+      }, 2000);
+
+      // Step 3: SENSOR ANOMALY
+      setTimeout(() => {
+        badge.textContent = '⚠️ ANOMALIA'; badge.className = 'badge bg-warning text-dark rounded-pill px-3 py-2';
+        addPanicEvent('var(--c-amber)', '⚠️', 'Anomalia detectada — Sensor de Vibração', 'Acelerômetro registrou desaceleração anômala: 2.8g (limiar: 1.5g). DTL gravando bloco.', true);
+      }, 4500);
+
+      // Step 4: CABIN STOPS - PEOPLE TRAPPED
+      setTimeout(() => {
+        movePanicCabin(3);
+        panicCabin.classList.add('panic-mode');
+        badge.textContent = '🚨 EMERGÊNCIA'; badge.className = 'badge bg-danger rounded-pill px-3 py-2';
+        document.getElementById('panicOcc').textContent = '85%';
+        const fppl = document.getElementById('pfp-3');
+        fppl.innerHTML = '<span class="person-icon trapped">😰</span><span class="person-icon trapped">😱</span><span class="person-icon trapped">👶</span>';
+        addPanicEvent('var(--c-rose)', '🚨', 'PARADA DE EMERGÊNCIA — Passageiros Presos!', '3 passageiros (incluindo 1 criança) retidos entre 3F e 4F. Interfone ativado. Sensor ToF 3D confirma presença humana.', true);
+      }, 7000);
+
+      // Step 5: NLP Processing
+      setTimeout(() => {
+        addPanicEvent('var(--c-cyan)', '🧠', 'CEO → NLP processando chamado de socorro', 'Transcrição do interfone: "Socorro! Estamos presos com uma criança!" — Sentimento: PÂNICO (0.97). Urgência: MÁXIMA.', true);
+      }, 9000);
+
+      // Step 6: Priority Calculation
+      setTimeout(() => {
+        addPanicEvent('var(--c-indigo)', '📊', 'Índice de Prioridade calculado: Pᵢ = 0.94', 'U=0.95 (vibração extrema) · P=1 (passageiros confirmados) · C=0.80 (edifício classe A) · L=0.65 (histórico). → PRIORIDADE CRÍTICA', true);
+        // Also update the calculator
+        document.getElementById('sU').value = 95; document.getElementById('sP').value = 1;
+        document.getElementById('sC').value = 80; document.getElementById('sL').value = 65;
+        recalc();
+      }, 11500);
+
+      // Step 7: Smart Contract
+      setTimeout(() => {
+        addPanicEvent('var(--c-violet)', '📜', 'DTL → Smart Contract acionado', 'Bloco criptográfico imutável gerado. Estado do elevador alterado para "INTERDITADO". RIA Online da prefeitura notificada automaticamente.', true);
+        mintSmartContract();
+      }, 14000);
+
+      // Step 8: Technician Dispatch
+      setTimeout(() => {
+        addPanicEvent('var(--c-emerald)', '🚗', 'Despacho Técnico — ETA 8 min', 'Técnico Carlos (cert. Otis Gen3™) despachado do furgão #12. Peça OP-4200 confirmada no inventário RFID. Rota otimizada: Av. Atlântica → Rua 3300.', false);
+        document.getElementById('etaDisp').textContent = '8 min';
+      }, 16500);
+
+      // Step 9: Robot yields
+      setTimeout(() => {
+        addPanicEvent('var(--c-amber)', '🤖', 'STRAB → Human-Yield Protocol ativado', 'Robô TOMI-A (coleta de lixo, 3F) cancelou travessia vertical. Robô Entrega-03 recuou para zona de espera. Prioridade total para resgate humano.', false);
+      }, 19000);
+
+      // Step 10: Rescue
+      setTimeout(() => {
+        badge.textContent = '✅ RESOLVIDO'; badge.className = 'badge bg-success rounded-pill px-3 py-2';
+        panicCabin.classList.remove('panic-mode');
+        const fppl = document.getElementById('pfp-3');
+        fppl.innerHTML = '<span class="person-icon">😮‍💨</span><span class="person-icon">😊</span><span class="person-icon">👶</span>';
+        addPanicEvent('var(--c-emerald)', '✅', 'Passageiros resgatados com sucesso', 'Técnico chegou em 7 min 23s. Porta desbloqueada manualmente. 3 passageiros evacuados sem ferimentos. Elevador permanece interditado até auditoria completa.', true);
+      }, 22000);
+
+      // Reset after
+      setTimeout(() => { panicRunning = false; }, 24000);
+    }
+
+    // ═══════════════════════════════════════════════
+    // CEO — PRIORITY CALCULATOR
+    // ═══════════════════════════════════════════════
+    const W = { u: 0.35, p: 0.30, c: 0.20, l: 0.15 };
+    function recalc() {
+      const u = document.getElementById('sU').value / 100;
+      const p = parseInt(document.getElementById('sP').value);
+      const c = document.getElementById('sC').value / 100;
+      const l = document.getElementById('sL').value / 100;
+      document.getElementById('vU').textContent = u.toFixed(2);
+      document.getElementById('vP').textContent = p;
+      document.getElementById('vC').textContent = c.toFixed(2);
+      document.getElementById('vL').textContent = l.toFixed(2);
+
+      const pi = W.u * u + W.p * p + W.c * c + W.l * l;
+      const piNum = document.getElementById('piNum');
+      const piLvl = document.getElementById('piLvl');
+      piNum.textContent = pi.toFixed(2);
+
+      if (pi >= 0.75) {
+        piNum.style.background = 'linear-gradient(135deg,#f43f5e,#ec4899)';
+        piNum.style.webkitBackgroundClip = 'text'; piNum.style.backgroundClip = 'text';
+        piLvl.className = 'pi-level pi-critical'; piLvl.textContent = '🚨 Crítica — Despacho Imediato';
+      } else if (pi >= 0.5) {
+        piNum.style.background = 'linear-gradient(135deg,#f59e0b,#f97316)';
+        piNum.style.webkitBackgroundClip = 'text'; piNum.style.backgroundClip = 'text';
+        piLvl.className = 'pi-level pi-high'; piLvl.textContent = '⚠️ Alta — Urgente';
+      } else if (pi >= 0.25) {
+        piNum.style.background = 'var(--grad-ceo)';
+        piNum.style.webkitBackgroundClip = 'text'; piNum.style.backgroundClip = 'text';
+        piLvl.className = 'pi-level pi-medium'; piLvl.textContent = '📋 Média — Agendamento';
+      } else {
+        piNum.style.background = 'linear-gradient(135deg,#10b981,#22c55e)';
+        piNum.style.webkitBackgroundClip = 'text'; piNum.style.backgroundClip = 'text';
+        piLvl.className = 'pi-level pi-low'; piLvl.textContent = '✓ Baixa — Preventiva';
+      }
+
+      const eta = Math.max(5, Math.round(30 - pi * 25));
+      document.getElementById('etaDisp').textContent = eta + ' min';
+    }
+    recalc();
+
+    // ═══════════════════════════════════════════════
+    // STRAB — ROBOT SIMULATION
+    // ═══════════════════════════════════════════════
+    const robotGrid = document.getElementById('robotGrid');
+    const robotFeed = document.getElementById('robotFeed');
+
+    const robots = [
+      { id: 'TOMI-A', task: 'Entrega de medicamentos', battery: 78, emoji: '🤖', floor: 1, bid: 0 },
+      { id: 'Limpeza-01', task: 'Coleta de lixo programada', battery: 45, emoji: '🧹', floor: 5, bid: 0 },
+      { id: 'Segurança-02', task: 'Ronda de segurança', battery: 92, emoji: '🛡️', floor: 3, bid: 0 },
+      { id: 'Entrega-03', task: 'Entrega de encomenda', battery: 33, emoji: '📦', floor: 2, bid: 0 }
+    ];
+
+    function renderRobots() {
+      robotGrid.innerHTML = '';
+      robots.forEach((r, i) => {
+        const batColor = r.battery > 50 ? 'var(--c-emerald)' : r.battery > 20 ? 'var(--c-amber)' : 'var(--c-rose)';
+        robotGrid.innerHTML += `
+          <div class="robot-card" id="rc${i}">
+            <div class="d-flex align-items-center gap-3 mb-2">
+              <div class="robot-avatar">${r.emoji}</div>
+              <div>
+                <h6 class="fw-bold mb-0 small">${r.id}</h6>
+                <p class="small text-muted mb-0">${r.task}</p>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Bateria</span>
+              <span class="fw-bold" style="font-family:var(--font-mono);color:${batColor}">${r.battery}%</span>
+            </div>
+            <div class="battery-bar"><div class="battery-fill" style="width:${r.battery}%;background:${batColor}"></div></div>
+            <div class="d-flex justify-content-between small mt-2">
+              <span class="text-muted">Andar</span>
+              <span class="fw-bold" style="font-family:var(--font-mono)">${r.floor}F</span>
+            </div>
+            ${r.bid > 0 ? `<div class="d-flex justify-content-between small mt-1"><span class="text-muted">Lance</span><span class="fw-bold" style="font-family:var(--font-mono);color:var(--c-emerald)">B=${r.bid.toFixed(3)}</span></div>` : ''}
+          </div>
+        `;
+      });
+    }
+    renderRobots();
+
+    function addFeed(type, msg) {
+      const el = document.createElement('div');
+      el.className = `feed-entry ${type}`;
+      el.innerHTML = `<div class="feed-time">${new Date().toLocaleTimeString('pt-BR',{hour12:false})}</div><div class="feed-msg">${msg}</div>`;
+      robotFeed.appendChild(el);
+      robotFeed.scrollTop = robotFeed.scrollHeight;
+    }
+
+    function updateOccGauge(val) {
+      const gauge = document.getElementById('occGauge');
+      const label = document.getElementById('occLabel');
+      const badge = document.getElementById('yieldBadge');
+      const off = 314 - (314 * val / 100);
+      gauge.style.strokeDashoffset = off;
+      label.textContent = val + '%';
+
+      if (val > 75) {
+        gauge.style.stroke = 'var(--c-rose)';
+        badge.style.background = 'rgba(244,63,94,0.12)'; badge.style.color = 'var(--c-rose)';
+        badge.textContent = '🚫 Embarque BLOQUEADO';
+      } else if (val > 50) {
+        gauge.style.stroke = 'var(--c-amber)';
+        badge.style.background = 'rgba(245,158,11,0.12)'; badge.style.color = 'var(--c-amber)';
+        badge.textContent = '⏳ Embarque PARCIAL';
+      } else {
+        gauge.style.stroke = 'var(--c-emerald)';
+        badge.style.background = 'rgba(16,185,129,0.12)'; badge.style.color = 'var(--c-emerald)';
+        badge.textContent = '✓ Embarque LIBERADO';
+      }
+    }
+    updateOccGauge(35);
+
+    let robotInterval = null;
+    const taskNames = ['entrega de remédios', 'coleta de lixo', 'ronda noturna', 'entrega expressa', 'inspeção de corredor'];
+
+    function startRobotSim() {
+      if (robotInterval) return;
+      document.getElementById('btnRobotStart').textContent = '⏸️ Simulação Ativa';
+
+      const events = [
+        () => {
+          const r = robots[Math.floor(Math.random()*robots.length)];
+          r.bid = Math.random() * 0.8 + 0.2;
+          r.battery = Math.max(5, r.battery - Math.floor(Math.random()*5));
+          renderRobots();
+          document.getElementById(`rc${robots.indexOf(r)}`).classList.add('bidding');
+          setTimeout(() => document.getElementById(`rc${robots.indexOf(r)}`)?.classList.remove('bidding'), 1200);
+          addFeed('bid', `<strong>${r.id}</strong> submeteu lance B=${r.bid.toFixed(3)} | Bateria: ${r.battery}% | Tarefa: ${r.task}`);
+        },
+        () => {
+          const occ = Math.floor(Math.random()*100);
+          updateOccGauge(occ);
+          const action = occ > 75 ? 'ADIAMENTO' : 'LIBERAÇÃO';
+          addFeed(occ > 75 ? 'alert' : 'yield', `<strong>Human-Yield:</strong> Ocupação ${occ}% → ${action} de embarque robótico`);
+        },
+        () => {
+          const r = robots[Math.floor(Math.random()*robots.length)];
+          r.floor = Math.floor(Math.random()*6)+1;
+          renderRobots();
+          addFeed('move', `<strong>${r.id}</strong> moveu-se para <strong>${r.floor}F</strong> — Tempo de porta ajustado +2.8s`);
+        },
+        () => {
+          const r = robots[Math.floor(Math.random()*robots.length)];
+          addFeed('yield', `<strong>${r.id}</strong> cedeu prioridade — passageiros humanos embarcando no ${Math.floor(Math.random()*6)+1}F`);
+        },
+        () => {
+          const r = robots[Math.floor(Math.random()*robots.length)];
+          if (r.battery < 20) {
+            addFeed('alert', `<strong>${r.id}</strong> bateria crítica (${r.battery}%) — retornando ao posto de carregamento`);
+            r.battery = Math.min(100, r.battery + 40);
+            renderRobots();
+          } else {
+            const dest = Math.floor(Math.random()*6)+1;
+            addFeed('move', `<strong>Leilão vencido!</strong> ${r.id} embarca → destino ${dest}F | Perfil de aceleração suavizado`);
+          }
+        }
+      ];
+
+      robotInterval = setInterval(() => {
+        events[Math.floor(Math.random()*events.length)]();
+      }, 2000);
+    }
+
+    function addNewRobot() {
+      const id = 'Bot-' + Math.random().toString(36).substring(2,5).toUpperCase();
+      robots.push({ id, task: taskNames[Math.floor(Math.random()*taskNames.length)], battery: 60+Math.floor(Math.random()*40), emoji: '🤖', floor: Math.floor(Math.random()*6)+1, bid: 0 });
+      renderRobots();
+      addFeed('bid', `<strong>${id}</strong> (NOVO) registrado na frota STRAB. Aguardando atribuição de tarefa.`);
+    }
+
+    function resetRobots() {
+      clearInterval(robotInterval); robotInterval = null;
+      document.getElementById('btnRobotStart').textContent = '▶️ Iniciar Simulação';
+      robots.length = 4;
+      robots[0] = { id: 'TOMI-A', task: 'Entrega de medicamentos', battery: 78, emoji: '🤖', floor: 1, bid: 0 };
+      robots[1] = { id: 'Limpeza-01', task: 'Coleta de lixo', battery: 45, emoji: '🧹', floor: 5, bid: 0 };
+      robots[2] = { id: 'Segurança-02', task: 'Ronda de segurança', battery: 92, emoji: '🛡️', floor: 3, bid: 0 };
+      robots[3] = { id: 'Entrega-03', task: 'Entrega de encomenda', battery: 33, emoji: '📦', floor: 2, bid: 0 };
+      renderRobots();
+      robotFeed.innerHTML = '<div class="feed-entry move"><div class="feed-time">' + new Date().toLocaleTimeString('pt-BR',{hour12:false}) + '</div><div class="feed-msg"><strong>STRAB Reinicializado</strong></div></div>';
+      updateOccGauge(35);
+    }
+
+    // Auto-start robot sim
+    setTimeout(startRobotSim, 2000);
+  </script>
+</body>
+</html>
