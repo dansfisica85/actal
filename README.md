@@ -3,6 +3,10 @@
 
 > **Protótipo acadêmico para mobilidade vertical inteligente, auditável e preparada para interação entre pessoas, elevadores, sensores, sistemas de manutenção e robôs autônomos.**
 
+## Glossário
+
+[Acessar o glossário do projeto ACTAL no Google Sheets](https://docs.google.com/spreadsheets/d/1NxJeTh6UZ89C2rDOTAm28M-oyFSO0CX7xZA7zZhBrT0/edit?gid=1112006981#gid=1112006981)
+
 ## 1. Introdução
 
 O **ACTAL (Aegis Cognitive Transit & Auditable Ledger)** é um framework/protótipo de software para demonstrar como um sistema de elevadores pode deixar de funcionar apenas como um equipamento eletromecânico isolado e passar a operar como parte de uma infraestrutura digital inteligente.
